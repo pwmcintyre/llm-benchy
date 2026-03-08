@@ -1,0 +1,16 @@
+{
+  "providers": {
+    "local-vllm": {
+      "type": "openai",
+      "baseURL": "http://localhost:8000/v1",
+      "apiKey": "dummy"
+    }
+  },
+  "models": {
+    "qwen-local": {
+      "provider": "local-vllm",
+      "id": "qwen-local"
+    }
+  },
+  "defaultModel": "qwen-local"
+}
