@@ -1,0 +1,28 @@
+services:
+  vllm:
+    image: vllm/vllm-openai:latest
+    container_name: qwen-vllm
+    restart: unless-stopped
+    ports:
+      - "8000:8000"
+    environment:
+      HUGGING_FACE_HUB_TOKEN: ${HUGGING_FACE_HUB_TOKEN:-}
+      HF_HOME: /models/hf
+      MODEL_NAME: ${MODEL_NAME:-Qwen/Qwen2.5-3B-Instruct}
+      SERVED_MODEL_NAME: ${SERVED_MODEL_NAME:-qwen-local}
+      MAX_MODEL_LEN: ${MAX_MODEL_LEN:-4096}
+      GPU_MEMORY_UTILIZATION: ${GPU_MEMORY_UTILIZATION:-0.90}
+      DTYPE: ${DTYPE:-auto}
+      QUANTIZATION: ${QUANTIZATION:-}
+      MAX_NUM_SEQS: ${MAX_NUM_SEQS:-8}
+    volumes:
+      - ./models:/models
+      - ./start-vllm.sh:/start-vllm.sh:ro
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [gpu]
+    entrypoint: ["/bin/bash", "/start-vllm.sh"]

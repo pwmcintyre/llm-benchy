@@ -1,0 +1,12 @@
+# Local runtime config/secrets
+.env
+
+# Model caches/artifacts
+models/
+
+# Benchmark raw outputs (keep curated summaries elsewhere)
+benchmark/results/
+
+# Python cache
+__pycache__/
+*.pyc

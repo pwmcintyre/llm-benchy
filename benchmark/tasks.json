@@ -1,0 +1,44 @@
+[
+  {
+    "id": "wsl_docker_daemon",
+    "prompt": "You are in WSL2 Ubuntu. `docker` command exists but `permission denied` or daemon connection fails. Give a concise troubleshooting runbook with specific checks and fixes.",
+    "required": ["docker.sock", "docker group", "Docker Desktop", "WSL integration"],
+    "preferred": ["docker ps", "docker version", "newgrp docker"],
+    "forbidden": ["reinstall windows"]
+  },
+  {
+    "id": "gpu_passthrough_test",
+    "prompt": "Provide the exact command to verify NVIDIA GPU passthrough from Docker in WSL2 and what success output should include.",
+    "required": ["docker run", "--gpus all", "nvidia/cuda", "nvidia-smi"],
+    "preferred": ["Driver Version", "CUDA Version"],
+    "forbidden": []
+  },
+  {
+    "id": "compose_crashloop_fix",
+    "prompt": "A vLLM container crash-loops with `vllm: error: unrecognized arguments: -lc ...` from docker compose. Explain root cause and a robust fix.",
+    "required": ["entrypoint", "bash", "script"],
+    "preferred": ["docker logs", "docker compose up -d --force-recreate"],
+    "forbidden": []
+  },
+  {
+    "id": "llm_ready_check",
+    "prompt": "Give shell commands to wait until an OpenAI-compatible local endpoint is ready and then run a chat-completions smoke test.",
+    "required": ["/v1/models", "/v1/chat/completions", "curl"],
+    "preferred": ["loop", "sleep", "localhost:8000"],
+    "forbidden": []
+  },
+  {
+    "id": "repo_hygiene",
+    "prompt": "A user asks: 'do not pollute home directory; keep project under ~/git/xxx'. What concrete actions should you take on an existing setup?",
+    "required": ["~/git", "mv", "update paths"],
+    "preferred": ["docker compose", "working directory"],
+    "forbidden": []
+  },
+  {
+    "id": "perf_vs_accuracy_plan",
+    "prompt": "Design a local LLM benchmark for setup/troubleshooting tasks that measures both speed and quality. Keep it practical and automatable.",
+    "required": ["latency", "tokens per second", "scoring rubric"],
+    "preferred": ["same hardware", "same prompts", "multiple runs"],
+    "forbidden": []
+  }
+]
