@@ -6,12 +6,52 @@
 |---|---|---|---|
 | `Qwen/Qwen2.5-1.5B-Instruct` | vLLM + Docker | Works | Fastest tested; lower task quality vs 3B. |
 | `Qwen/Qwen2.5-3B-Instruct` | vLLM + Docker | Works (current default) | Best stable tradeoff tested so far. |
-| `Qwen/Qwen3.5-4B` | vLLM + Docker | Partially validated | Loads, but longer warmup/startup on this stack. |
-| `cyankiwi/Qwen3.5-9B-AWQ-4bit` | vLLM + Docker | Fails on 12GB 4070 | Quantization arg mismatch fixed, then KV-cache memory headroom failure after load/compile. |
+| `Qwen/Qwen3.5-0.8B` | vLLM + Docker | Works | Mean speed ~168 tok/s; lowest quality of tested 3.5 sizes. |
+| `Qwen/Qwen3.5-2B` | vLLM + Docker | Works | Best quality among tested Qwen3.5 sizes here; mean speed ~84 tok/s. |
+| `Qwen/Qwen3.5-4B` | vLLM + Docker | Works | Mean speed ~41 tok/s; quality below 2B in this benchmark. |
+| `Qwen/Qwen3.5-9B` | vLLM + Docker | Fails on 12GB 4070 | Not ready within 600s; model load observed at 17.66 GiB. |
+| `cyankiwi/Qwen3.5-9B-AWQ-4bit` | vLLM + Docker | Fails on 12GB 4070 | Repeated `No available memory for the cache blocks` during init. |
 
 ### Quick recommendation
-- Daily local agent workloads: use `Qwen/Qwen2.5-3B-Instruct` (or test `Qwen3.5-4B` if you can tolerate longer startup).
+- Daily local agent workloads on this hardware: use `Qwen/Qwen2.5-3B-Instruct` or `Qwen/Qwen3.5-2B`.
 - For 9B class on this hardware: prefer testing GGUF + `llama.cpp` CUDA rather than vLLM.
+
+## Latest Qwen 3.5 Matrix (Up To 9B)
+
+| slug | model | status | startup_s | max_len | max_seqs | notes |
+|---|---|---:|---:|---:|---:|---|
+| `qwen35_0p8b` | `Qwen/Qwen3.5-0.8B` | ready | 106 | 4096 | 8 | mean_tps=168.15, mean_quality=0.146, mean_latency=4.198s |
+| `qwen35_2b` | `Qwen/Qwen3.5-2B` | ready | 112 | 4096 | 8 | mean_tps=83.78, mean_quality=0.271, mean_latency=5.086s |
+| `qwen35_4b` | `Qwen/Qwen3.5-4B` | ready | 126 | 4096 | 4 | mean_tps=40.65, mean_quality=0.181, mean_latency=7.17s |
+| `qwen35_9b` | `Qwen/Qwen3.5-9B` | failed | 600 | 2048 | 1 | not ready within 600s; model load observed at 17.66 GiB |
+| `qwen35_9b_awq4` | `cyankiwi/Qwen3.5-9B-AWQ-4bit` | failed | 600 | 1024 | 1 | `No available memory for the cache blocks` |
+
+The generated summary file is also available at `benchmark/SUMMARY_QWEN35.md`.
+
+## Alternatives Research Status
+
+- Candidate alternatives identified for this hardware profile:
+  - `Qwen/Qwen2.5-Coder-3B-Instruct`
+  - `deepseek-ai/DeepSeek-R1-Distill-Qwen-1.5B`
+  - `google/gemma-3-4b-it`
+  - `deepseek-ai/DeepSeek-R1-Distill-Qwen-7B`
+
+### Alternatives Validation Results
+
+| slug | model | status | startup_s | max_len | max_seqs | notes |
+|---|---|---:|---:|---:|---:|---|
+| `alt_qwen25_coder_3b` | `Qwen/Qwen2.5-Coder-3B-Instruct` | ready | 70 | 4096 | 8 | mean_tps=62.53, mean_quality=0.306, mean_latency=2.878s |
+| `alt_deepseek_r1_qwen_1p5b` | `deepseek-ai/DeepSeek-R1-Distill-Qwen-1.5B` | ready | 112 | 4096 | 8 | mean_tps=117.14, mean_quality=0.083, mean_latency=1.537s |
+| `alt_gemma3_4b` | `google/gemma-3-4b-it` | failed | 480 | 4096 | 4 | Gated model (HF 401). Requires approved account access + auth token. |
+| `alt_deepseek_r1_qwen_7b` | `deepseek-ai/DeepSeek-R1-Distill-Qwen-7B` | failed | 559 | 2048 | 1 | `No available memory for the cache blocks` on 12GB 4070 in this stack. |
+
+### Alternatives Takeaways
+- Best quality among tested alternatives in this benchmark: `Qwen/Qwen2.5-Coder-3B-Instruct` (`mean_quality=0.306`).
+- Fastest working alternative: `DeepSeek-R1-Distill-Qwen-1.5B`, but quality dropped sharply on practical troubleshooting prompts.
+- `Gemma 3 4B` could not be evaluated due to repository gating.
+- `DeepSeek-R1-Distill-Qwen-7B` is not viable on this setup under vLLM due to memory headroom/KV cache limits.
+
+Full alternatives run output is stored at `benchmark/results/alternatives_summary.md`.
 
 ## 2026-03-08 - Local Qwen setup on WSL2 + RTX 4070 12GB
 
