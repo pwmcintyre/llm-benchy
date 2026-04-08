@@ -1,0 +1,77 @@
+{
+  "$schema": "https://opencode.ai/config.json",
+  "provider": {
+    "ollama": {
+      "npm": "@ai-sdk/openai-compatible",
+      "name": "Ollama (local)",
+      "options": {
+        "baseURL": "http://localhost:11434/v1"
+      },
+      "models": {
+        "gemma4:26b": {
+          "name": "Gemma 4 26B MoE — best quality/speed (27 t/s, 8.0/10)",
+          "limit": { "context": 32768, "output": 8192 }
+        },
+        "qwen3:30b": {
+          "name": "Qwen3 30B — fastest large model (41 t/s) — WARNING: fails instruction-follow",
+          "limit": { "context": 32768, "output": 8192 }
+        },
+        "qwen2.5-coder:32b-instruct-q4_K_M": {
+          "name": "Qwen2.5-Coder 32B — deep coding tasks (6 t/s, 9.0/10 on debug)",
+          "limit": { "context": 32768, "output": 8192 }
+        },
+        "qwq:32b": {
+          "name": "QwQ 32B — reasoning/chain-of-thought (5.8 t/s)",
+          "limit": { "context": 32768, "output": 16384 }
+        },
+        "phi4:14b-q4_K_M": {
+          "name": "Phi-4 14B — fast mid-size (13 t/s, 6.8/10)",
+          "limit": { "context": 16384, "output": 4096 }
+        },
+        "qwen2.5-coder:7b": {
+          "name": "Qwen2.5-Coder 7B — fastest coding baseline (26 t/s)",
+          "limit": { "context": 32768, "output": 4096 }
+        }
+      }
+    }
+    ,
+    "mlx": {
+      "npm": "@ai-sdk/openai-compatible",
+      "name": "MLX (local)",
+      "options": {
+        "baseURL": "http://localhost:8080/v1"
+      },
+      "models": {
+        "mlx-community/gemma-4-26b-a4b-it-4bit": {
+          "name": "Gemma 4 26B MoE (MLX) — 40 t/s, 1.26s TTFT, interactive",
+          "limit": { "context": 32768, "output": 8192 }
+        },
+        "mlx-community/Qwen3.5-27B-Claude-4.6-Opus-Distilled-MLX-4bit": {
+          "name": "Qwen3.5 27B Claude-4.6 Distilled (MLX 4-bit) — fits 32GB Macs",
+          "limit": { "context": 32768, "output": 8192 }
+        },
+        "lmstudio-community/Qwen3-Coder-30B-A3B-Instruct-MLX-4bit": {
+          "name": "Qwen3 Coder 30B A3B Instruct (MLX 4-bit) — coding-focused",
+          "limit": { "context": 32768, "output": 8192 }
+        }
+      }
+    }
+  },
+  "mcp": {
+    "notion": {
+      "type": "remote",
+      "url": "https://mcp.notion.com/mcp",
+      "enabled": false
+    },
+    "atlassian": {
+      "type": "remote",
+      "url": "https://mcp.atlassian.com/v1/mcp",
+      "enabled": true
+    },
+    "playwright-versent": {
+      "type": "local",
+      "command": ["npx", "-y", "@playwright/mcp", "--browser", "chrome", "--user-data-dir", "/Users/peter/.playwright-versent"],
+      "enabled": true
+    }
+  }
+}
