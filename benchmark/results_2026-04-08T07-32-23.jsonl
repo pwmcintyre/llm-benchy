@@ -1,0 +1,2 @@
+{"timestamp":"2026-04-08T07:34:23.686Z","model":"qwen35-9b","prompt":"code-explain","run":1,"ttft_ms":null,"total_time_ms":120670,"tokens":0,"tg_tps":0,"output_length":0}
+{"timestamp":"2026-04-08T07:36:24.171Z","model":"qwen35-9b","prompt":"code-explain","run":2,"ttft_ms":null,"total_time_ms":119984,"tokens":0,"tg_tps":0,"output_length":0}
