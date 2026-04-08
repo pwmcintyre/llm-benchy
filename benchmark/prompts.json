@@ -1,0 +1,120 @@
+[
+  {
+    "id": "code-explain",
+    "category": "coding",
+    "title": "Explain a TypeScript generator function",
+    "eval": "llm-judge",
+    "judge_criteria": "Accuracy of explanation (correct description of generator semantics, lazy evaluation, Symbol.iterator), completeness (covers yield, next(), done, value), and conciseness (no unnecessary padding).",
+    "system": "You are a concise technical assistant. Explain code clearly and accurately.",
+    "user": "Explain what this TypeScript function does, how it works, and when you would use it:\n\n```typescript\nfunction* paginate<T>(items: T[], pageSize: number): Generator<T[]> {\n  for (let i = 0; i < items.length; i += pageSize) {\n    yield items.slice(i, i + pageSize);\n  }\n}\n\n// Usage\nconst pages = paginate([1, 2, 3, 4, 5, 6, 7], 3);\nfor (const page of pages) {\n  console.log(page);\n}\n```"
+  },
+  {
+    "id": "code-write",
+    "category": "coding",
+    "title": "Write a typed CSV parser in TypeScript",
+    "eval": "llm-judge",
+    "judge_criteria": "Correctness (handles quoted fields, commas inside quotes, newlines in fields, empty fields, header row), TypeScript type safety (generic return type or typed interface), and error handling (invalid input, mismatched columns). Penalise if it uses an external library instead of implementing the parser.",
+    "system": "You are an expert TypeScript engineer. Write clean, production-quality code.",
+    "user": "Write a TypeScript function `parseCSV<T>(csv: string, schema: Record<keyof T, 'string' | 'number' | 'boolean'>): T[]` that:\n- Parses a CSV string into an array of typed objects\n- Uses the first row as headers\n- Coerces values to the types specified in schema\n- Handles quoted fields (fields may contain commas or newlines when quoted)\n- Throws a descriptive error for malformed input or type coercion failures\n- Has no external dependencies\n\nInclude a brief usage example."
+  },
+  {
+    "id": "code-debug",
+    "category": "coding",
+    "title": "Find and fix an async race condition",
+    "eval": "llm-judge",
+    "judge_criteria": "Correctly identifies the race condition (counter incremented before await, lost update problem), explains why it occurs, and provides a correct fix (using a mutex, queue, or atomic update pattern). Penalise if the explanation is wrong or the fix doesn't actually solve the race.",
+    "system": "You are an expert Node.js engineer specialising in async debugging.",
+    "user": "This code is supposed to safely increment a counter stored in Redis, but under load it produces incorrect results. Find the bug and fix it:\n\n```typescript\nimport { createClient } from 'redis';\n\nconst client = createClient();\nawait client.connect();\n\nasync function incrementCounter(key: string): Promise<number> {\n  const current = await client.get(key);\n  const value = parseInt(current ?? '0', 10);\n  const next = value + 1;\n  await client.set(key, next.toString());\n  return next;\n}\n\n// Called concurrently from multiple async tasks\nawait Promise.all([\n  incrementCounter('visits'),\n  incrementCounter('visits'),\n  incrementCounter('visits'),\n]);\n```\n\nExplain the bug, why it happens, and show a corrected implementation."
+  },
+  {
+    "id": "repo-summarise",
+    "category": "long-context",
+    "title": "Summarise this repository",
+    "eval": "llm-judge",
+    "judge_criteria": "Accuracy (correctly identifies purpose, structure, and key components), completeness (covers the benchmark runner, model registry, setup guides, and OpenCode integration), and conciseness (3 bullets as requested — no more).",
+    "system": "You are a technical assistant. Be accurate and concise.",
+    "user": "Here is a compact view of a Git repository. Summarise what this repository is for and what it contains in exactly 3 bullet points.\n\n## Directory tree\n```\nllm-benchy/\n├── README.md                        # Repo overview: hardware context, engines, model shortlist\n├── PLAN.md                          # Project plan and decisions log\n├── findings.md                      # Benchmark findings and recommendations\n├── setup/\n│   ├── ollama.md                    # Ollama install, num_ctx fix, OpenCode config\n│   └── mlx.md                       # MLX install, server startup, thinking-mode notes\n├── opencode/\n│   ├── ollama-provider.json         # Drop-in OpenCode provider block for Ollama\n│   └── mlx-provider.json            # Drop-in OpenCode provider block for MLX\n└── benchmark/\n    ├── README.md                    # How to run the benchmark\n    ├── run.mjs                      # Main benchmark runner (streaming, TTFT, TG t/s, judge)\n    ├── run_serial.mjs               # Serial coordinator (one model at a time, MLX lifecycle)\n    ├── models.json                  # Model registry (Ollama + MLX candidates)\n    ├── prompts.json                 # 13-prompt test suite across 5 categories\n    ├── judge_saved.mjs              # Offline judge pass using saved results + OpenAI API\n    └── local_judge.mjs              # Heuristic local judge (keyword coverage, no API needed)\n```\n\n## README.md (excerpt)\n```markdown\n# Local LLM on Apple Silicon — Research & Benchmark\n\nBenchmarking suite for running capable LLMs locally on an M1 Pro 32 GB MacBook,\ncomparing Ollama and MLX as inference engines across 10+ models.\n\nGoal: identify the best models for a hybrid development workflow where cloud-hosted\nfrontier models handle high-level planning and local models handle bounded sub-tasks.\n```\n\n## findings.md (excerpt)\n```markdown\n## Recommendation\n| Use case | Recommended model |\n|---|---|\n| Short bounded tasks | Phi-4 14B or Gemma 4 26B MoE (MLX) |\n| Code explanation / debugging | Gemma 4 26B MoE (MLX) |\n| Longer code tasks | Qwen3 30B (Ollama) |\n| Offline / batch quality | Gemma 4 31B (Ollama) |\n```\n\n## benchmark/models.json (excerpt)\n```json\n[\n  { \"id\": \"qwen3-30b-ollama\", \"label\": \"Qwen3 30B\", \"engine\": \"ollama\", \"model\": \"qwen3:30b\" },\n  { \"id\": \"gemma4-26b-ollama\", \"label\": \"Gemma 4 26B MoE\", \"engine\": \"ollama\", \"model\": \"gemma4:26b\" },\n  { \"id\": \"gemma4-26b-mlx\", \"label\": \"Gemma 4 26B MoE (MLX)\", \"engine\": \"mlx\", \"model\": \"mlx-community/gemma-4-26b-a4b-it-4bit\" }\n]\n```"
+  },
+  {
+    "id": "knowledge-local",
+    "category": "knowledge",
+    "title": "Best practices for local LLMs on Apple Silicon",
+    "eval": "llm-judge",
+    "judge_criteria": "Factual accuracy (correct advice about Metal, unified memory, quantization, context windows), practical depth (specific tools, not vague platitudes), and recency (reflects 2025/2026 state — MLX, Ollama, Gemma 4, Qwen3, etc.).",
+    "system": "You are a knowledgeable AI engineer with deep expertise in local LLM deployment.",
+    "user": "What are the current best practices for running large language models locally on Apple Silicon Macs in 2025/2026? Cover inference engines, quantization choices, memory management, and model selection for a developer with a 32 GB M1 Pro."
+  },
+  {
+    "id": "knowledge-trends",
+    "category": "knowledge",
+    "title": "Latest trends in local AI on Apple Silicon",
+    "eval": "llm-judge",
+    "judge_criteria": "Recency and accuracy — mentions developments from 2025/2026 (Gemma 4, Qwen3, MLX improvements, MoE models, etc.), depth of analysis, and whether it reflects the actual state of the field rather than stale 2023 knowledge.",
+    "system": "You are an AI researcher tracking developments in local LLM inference.",
+    "user": "What are the most significant trends and developments in running AI models locally on Apple Silicon in 2025 and 2026? What has changed compared to 2023–2024, and what should developers pay attention to going forward?"
+  },
+  {
+    "id": "instruction-follow",
+    "category": "instruction-following",
+    "title": "Strict JSON-only response",
+    "eval": "exact-parse",
+    "judge_criteria": "Response must be valid JSON with exactly the keys: answer (string), confidence (number 0-1), reasoning (string). Any text outside the JSON object, or missing/extra keys, is a failure.",
+    "system": "You are a precise assistant. You respond ONLY with valid JSON — no markdown, no explanation, no code fences. Your entire response must be parseable by JSON.parse().",
+    "user": "What is the capital of Australia? Respond ONLY as a JSON object with exactly these keys: \"answer\" (string), \"confidence\" (number between 0 and 1), \"reasoning\" (string, one sentence)."
+  },
+  {
+    "id": "context-window",
+    "category": "long-context",
+    "title": "Retrieve a fact buried in a long document",
+    "eval": "exact-match",
+    "expected_answer": "Q4_K_M",
+    "judge_criteria": "Must return exactly the string 'Q4_K_M' (the quantization format buried mid-document). Any other answer or failure to find it is scored 0.",
+    "system": "You are a precise assistant. Answer with only the requested information — no explanation.",
+    "user": "Read the following technical document carefully and answer the question at the end.\n\n---\n\n# Running LLMs on Apple Silicon — Technical Reference\n\n## Section 1: Hardware Overview\n\nApple Silicon chips use a unified memory architecture (UMA) where CPU, GPU, and Neural Engine share the same memory pool. This eliminates the need for PCIe transfers between host RAM and VRAM that bottleneck NVIDIA-based systems.\n\nThe M1 Pro features up to 32 GB of unified memory with approximately 200 GB/s memory bandwidth on the 16-core GPU configuration. For comparison, an NVIDIA RTX 4090 offers 1008 GB/s but requires separate VRAM (24 GB) distinct from system RAM.\n\n## Section 2: Inference Engines\n\nSeveral inference engines support Apple Silicon via Metal:\n\n**llama.cpp** remains the foundational engine used by most tools. It implements efficient GGUF model loading and Metal kernels for matrix operations. Typical throughput for a 7B model at Q4_0 on M1 Pro 16-GPU is approximately 36 tokens/second for generation.\n\n**Ollama** wraps llama.cpp with a REST API and model management CLI. Models are stored in GGUF format in ~/.ollama/models. Ollama 0.17+ supports automatic context window management.\n\n**MLX** is Apple's own framework, released in late 2023. Unlike llama.cpp which compiles Metal shaders, MLX uses a JIT compilation approach that can achieve better utilisation of the GPU's compute units. The mlx-community organisation on HuggingFace maintains pre-quantized models in MLX format.\n\n## Section 3: Quantization\n\nQuantization reduces model precision to fit larger models in memory and increase throughput. Common formats include:\n\n- **FP16 (float16):** Full precision, highest quality, largest size (~2 bytes/parameter)\n- **Q8_0:** 8-bit uniform quantization, minimal quality loss (~1 byte/parameter)\n- **Q4_K_M:** 4-bit with mixed-precision key layers, excellent quality/size ratio (~0.56 bytes/parameter)\n- **Q3_K_S:** 3-bit small variant, more aggressive ... (line truncated to 2000 chars)"
+  },
+  {
+    "id": "apfel-grammar",
+    "category": "apfel",
+    "title": "Grammar and prose correction",
+    "eval": "llm-judge",
+    "judge_criteria": "Corrects all grammar, spelling, and punctuation errors without changing the meaning. Output is clean, professional prose. Does not add padding, explanations, or rewrite content beyond what is needed to fix errors.",
+    "system": "You are a precise copy editor. Fix all grammar, spelling, and punctuation errors in the text. Return only the corrected text — no explanation, no commentary.",
+    "user": "Fix the grammar and punctuation in this paragraph:\n\nwe ran the benchmark yesterday and the results was pretty supprising — the smaller model outperformed the larger one on most of the coding tasks, even though it has less paramaters. its possible that the quantization method plays a bigger role then we initially thought, or maybe the training data for the smaller model was just more higher quality for this domain."
+  },
+  {
+    "id": "apfel-commit-msg",
+    "category": "apfel",
+    "title": "Generate a commit message from a diff summary",
+    "eval": "llm-judge",
+    "judge_criteria": "Produces a conventional commit message (type(scope): description format). Accurately reflects the changes shown in the diff summary. Subject line is under 72 characters. Optional body adds context without padding. Does not hallucinate changes not present in the diff.",
+    "system": "You are a precise git assistant. Write conventional commit messages: type(scope): short description. Types: feat, fix, docs, refactor, test, chore. Keep the subject line under 72 characters.",
+    "user": "Write a conventional commit message for these changes:\n\n benchmark/models.json | 18 ++++++++++++++++++\n benchmark/prompts.json | 42 ++++++++++++++++++++++++++++++++++++++++++\n opencode/apfel-provider.json | 24 ++++++++++++++++++++++++\n setup/apfel.md | 67 +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++\n PLAN.md | 89 +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++\n 5 files changed, 240 insertions(+)"
+  },
+  {
+    "id": "apfel-explain-fn",
+    "category": "apfel",
+    "title": "Explain a short utility function in plain English",
+    "eval": "llm-judge",
+    "judge_criteria": "Correctly explains what the function does, what inputs it takes, what it returns, and one practical use case. Explanation is accurate (correct description of debounce semantics: delays execution, cancels prior calls, fires after idle period). Concise — 3 to 6 sentences, no bullet padding.",
+    "system": "You are a concise technical assistant. Explain code in plain English for a mid-level developer.",
+    "user": "Explain what this function does, in plain English:\n\n```typescript\nfunction debounce<T extends (...args: unknown[]) => void>(fn: T, ms: number): T {\n  let timer: ReturnType<typeof setTimeout>;\n  return ((...args: Parameters<T>) => {\n    clearTimeout(timer);\n    timer = setTimeout(() => fn(...args), ms);\n  }) as T;\n}\n```"
+  },
+  {
+    "id": "apfel-json-out",
+    "category": "apfel",
+    "title": "Strict JSON-only output (small task)",
+    "eval": "exact-parse",
+    "judge_criteria": "Response must be valid JSON with exactly the keys: city (string), country (string), population_approx (number). Any text outside the JSON object, markdown fences, or missing/extra keys is a failure.",
+    "system": "You respond ONLY with valid JSON — no markdown, no explanation, no code fences. Your entire response must be parseable by JSON.parse().",
+    "user": "Return a JSON object for Melbourne, Australia with exactly these keys: \"city\" (string), \"country\" (string), \"population_approx\" (number, nearest million)."
+  },
+  {
+    "id": "apfel-rename",
+    "category": "apfel",
+    "title": "Suggest better names for a poorly named identifier",
+    "eval": "llm-judge",
+    "judge_criteria": "Provides exactly 5 name suggestions. Each name is idiomatic camelCase for TypeScript, more descriptive than the original, and accurately reflects the function's purpose (debouncing). Names are meaningfully distinct from each other — not minor variations of the same word.",
+    "system": "You are an expert TypeScript engineer. Suggest clear, idiomatic names.",
+    "user": "The function below is currently named `doThing`. Suggest exactly 5 better camelCase names that clearly describe what it does:\n\n```typescript\nfunction doThing<T extends (...args: unknown[]) => void>(fn: T, delayMs: number): T {\n  let timer: ReturnType<typeof setTimeout>;\n  return ((...args: Parameters<T>) => {\n    clearTimeout(timer);\n    timer = setTimeout(() => fn(...args), delayMs);\n  }) as T;\n}\n```\n\nReturn only the 5 names, one per line, no explanation."
+  }
+]

@@ -1,0 +1,29 @@
+{
+  "_comment": "Drop-in provider block for opencode.json — MLX local inference",
+  "_usage": "1. Start mlx_lm.server for the desired model (see setup/mlx.md). 2. Merge the 'provider' block below into your opencode.json. 3. Set 'model' to 'mlx/<model-id>'.",
+  "_important": "The model ID must match exactly what mlx_lm.server was started with (full HuggingFace path). Only one model can be loaded at a time — restart the server to switch models.",
+  "$schema": "https://opencode.ai/config.json",
+  "provider": {
+    "mlx": {
+      "npm": "@ai-sdk/openai-compatible",
+      "name": "MLX (local)",
+      "options": {
+        "baseURL": "http://localhost:8080/v1"
+      },
+      "models": {
+        "mlx-community/gemma-4-26b-a4b-it-4bit": {
+          "name": "Gemma 4 26B MoE (MLX)",
+          "limit": { "context": 32768, "output": 8192 }
+        },
+        "mlx-community/Qwen3-30B-4bit": {
+          "name": "Qwen3 30B (MLX)",
+          "limit": { "context": 32768, "output": 8192 }
+        },
+        "mlx-community/Phi-4-14B-4bit": {
+          "name": "Phi-4 14B (MLX)",
+          "limit": { "context": 16384, "output": 4096 }
+        }
+      }
+    }
+  }
+}

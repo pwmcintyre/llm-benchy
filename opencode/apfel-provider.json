@@ -1,0 +1,23 @@
+{
+  "_comment": "Drop-in provider block for opencode.json — apfel (Apple Foundation Model, Neural Engine)",
+  "_usage": "1. Install apfel (see setup/apfel.md). 2. Start the server: apfel --serve --port 11435. 3. Merge the 'provider' block below into your opencode.json. 4. Select the model via the OpenCode model picker.",
+  "_important": "Context window is 4096 tokens TOTAL (input + output combined) — a hard Apple framework limit. Do not use for multi-step agent tasks, long files, or tool-calling loops. Best for short single-turn tasks: grammar fix, commit message, explain a snippet, strict JSON output, rename suggestions. Use port 11435 to avoid conflict with Ollama on 11434.",
+  "_requires": "macOS 26 (Tahoe), Apple Silicon (M1+), Apple Intelligence enabled (System Settings → Apple Intelligence & Siri)",
+  "$schema": "https://opencode.ai/config.json",
+  "provider": {
+    "apfel": {
+      "npm": "@ai-sdk/openai-compatible",
+      "name": "apfel (Apple Neural Engine)",
+      "options": {
+        "baseURL": "http://localhost:11435/v1",
+        "apiKey": "unused"
+      },
+      "models": {
+        "apple-foundationmodel": {
+          "name": "Apple Foundation Model (on-device, Neural Engine)",
+          "limit": { "context": 4096, "output": 2048 }
+        }
+      }
+    }
+  }
+}

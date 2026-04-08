@@ -1,0 +1,53 @@
+{
+  "_comment": "Drop-in provider block for opencode.json — Ollama local inference",
+  "_usage": "Merge the 'provider' block below into your opencode.json, then set 'model' to 'ollama/<model-id>'",
+  "_important": "num_ctx: Ollama defaults to 2048 tokens. For OpenCode agent tool calls to work reliably, create modelfile overrides with num_ctx 32768 (see setup/ollama.md) and reference the custom model names below.",
+  "$schema": "https://opencode.ai/config.json",
+  "provider": {
+    "ollama": {
+      "npm": "@ai-sdk/openai-compatible",
+      "name": "Ollama (local)",
+      "options": {
+        "baseURL": "http://localhost:11434/v1"
+      },
+      "models": {
+        "qwen3:30b": {
+          "name": "Qwen3 30B (general)",
+          "limit": { "context": 32768, "output": 8192 }
+        },
+        "gemma4:26b": {
+          "name": "Gemma 4 26B MoE (general + coding)",
+          "limit": { "context": 32768, "output": 8192 }
+        },
+        "gemma4:31b": {
+          "name": "Gemma 4 31B (general + coding)",
+          "limit": { "context": 32768, "output": 8192 }
+        },
+        "qwen2.5-coder:32b-instruct-q4_K_M": {
+          "name": "Qwen2.5-Coder 32B (coding)",
+          "limit": { "context": 32768, "output": 8192 }
+        },
+        "qwen3:14b-q4_K_M": {
+          "name": "Qwen3 14B (fast general)",
+          "limit": { "context": 32768, "output": 8192 }
+        },
+        "phi4:14b-q4_K_M": {
+          "name": "Phi-4 14B (fast general)",
+          "limit": { "context": 16384, "output": 4096 }
+        },
+        "qwq:32b": {
+          "name": "QwQ 32B (reasoning)",
+          "limit": { "context": 32768, "output": 16384 }
+        },
+        "deepseek-r1:32b": {
+          "name": "DeepSeek-R1 32B (reasoning)",
+          "limit": { "context": 32768, "output": 16384 }
+        },
+        "qwen2.5-coder:7b": {
+          "name": "Qwen2.5-Coder 7B (fast coding)",
+          "limit": { "context": 32768, "output": 4096 }
+        }
+      }
+    }
+  }
+}
