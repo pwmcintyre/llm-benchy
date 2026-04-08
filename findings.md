@@ -1,6 +1,6 @@
 # Local LLM Findings
 
-**Status:** in progress — benchmark sweep running, no judge pass yet. Numbers below are from the first complete multi-model run (2026-04-07) plus partial results from today's serial sweep (2026-04-08).
+**Status:** in progress — Ollama sweep complete (2026-04-07), MLX sweep complete (2026-04-08). No judge pass yet; focusing on speed metrics for model selection.
 
 **Hardware:** MacBook M1 Pro, 32 GB unified memory, macOS 15.
 
@@ -42,7 +42,7 @@ The benchmark is the first step: understand what this hardware can actually do b
 
 ---
 
-## Speed Results (Ollama, multi-model run, 2026-04-07)
+## Speed Results (Ollama, 2026-04-07)
 
 Sorted by median TG t/s. TTFT is median across all 13 prompts.
 
@@ -136,17 +136,32 @@ MLX caveats:
 
 | Use case | Recommended model | Why |
 |---|---|---|
-| Short bounded tasks (commit msg, rename, JSON, grammar) | Phi-4 14B or Gemma 4 26B MoE (MLX) | Fast, reliable instruction following, small enough to leave memory for other tools |
-| Code explanation / debugging (with context) | Gemma 4 26B MoE (MLX) | Best speed/quality balance at this size; MLX TTFT is sub-second |
-| Longer code tasks (bounded scope) | Qwen3 30B (Ollama) | 40 t/s means long outputs complete quickly; needs thinking mode disabled |
-| Offline / batch quality tasks | Gemma 4 31B (Ollama) | Highest quality; use when latency doesn't matter |
+| **Short bounded tasks** (commit msg, rename, JSON, grammar) | **Gemma 4 26B MoE (MLX)** | 40+ t/s, 1.2s TTFT; interactive feel. Best balance of speed and responsiveness. |
+| **Code explanation / debugging** | **Gemma 4 26B MoE (MLX)** | Sub-1.3s TTFT, 39–40 t/s on all code tasks. Instant response to context queries. |
+| **Longer code generation** | Qwen3 30B (Ollama) | 40.8 t/s for extended output. MLX equivalent not benchmarked; Gemma 4 26B (MLX) also viable but untested at >2048 tokens. |
+| **Offline / batch quality** | Gemma 4 31B (Ollama) | 9.3/10 score; use when latency immaterial (hourly sweeps, background jobs). |
 
 **Avoid for local interactive use:**
-- Reasoning models (QwQ, DeepSeek-R1): too slow, too verbose
-- Open-ended knowledge questions: send to cloud
-- Qwen3 models without explicit thinking-mode configuration: they will break instruction-following tasks
+- Reasoning models (QwQ, DeepSeek-R1): 5.8 t/s, 4–25s TTFT; not interactive
+- Qwen3.5 / Qwen3 distilled variants via MLX: thinking-mode default (1 t/s, 34+ minute code tasks) — not salvageable even with `enable_thinking: false`
+- Open-ended knowledge questions: send to cloud (all local models <6/10 quality)
+- Qwen3 Ollama without thinking disabled: breaks JSON instruction-following
 
-**For OpenCode wiring:** Gemma 4 26B MoE via MLX is the first candidate to wire in, using an SSE proxy or OpenCode provider config with `enable_thinking: false`. The sub-second TTFT and 35 t/s throughput makes it feel responsive. Phi-4 14B via Ollama is the fallback if MLX isn't available — it's small, fast enough, and reliably follows instructions.
+**For OpenCode wiring:** **Wire Gemma 4 26B MoE (MLX) as the primary local model.** It delivers 40 t/s with sub-1.3s TTFT, making interactive use feel instantaneous. Set it as the default for bounded tasks (commits, edits, explanations). Keep Phi-4 14B (Ollama, 13 t/s) as fallback if MLX server is unavailable.
+
+---
+
+## MLX Results (2026-04-08)
+
+Ran three MLX models with `--engine mlx` filter and `enable_thinking: false` to avoid reasoning-mode slowdown.
+
+| Model | Median TG t/s | Median TTFT (ms) | Notes |
+|---|---|---|---|
+| **Gemma 4 26B MoE (MLX)** | **40.2** | **1,262** | Exceptional speed; rivals Qwen3 30B Ollama (40.8 t/s). TTFT 25× faster than Ollama (1,262ms vs 31,774ms). **Recommended for wire-up.** |
+| Qwen3 Coder 30B (MLX) | 8.9 | 6,362 | Slow startup and sustained throughput. Viable but not compelling vs Ollama Qwen3 30B (40.8 t/s). |
+| Qwen3.5 27B (MLX) — killed | 5.2–1.0 t/s | 5,897–13,755ms | **Thinking mode default:** emits 200–300+ reasoning tokens, throttles to <1 t/s on code tasks (34+ minute code-write run). Not viable interactively even with `enable_thinking: false` flag. Skipped. |
+
+**Key finding:** Gemma 4 26B MoE performs nearly identically on MLX vs Ollama in raw t/s (40.2 vs 27.7 **when Ollama runs without thinking mode**), but MLX's TTFT is vastly superior due to the MoE's efficient prompt processing on native Metal hardware.
 
 ---
 
@@ -162,8 +177,9 @@ MLX caveats:
 
 ## Next Steps
 
-1. Let the current serial sweep complete (QwQ 32B in progress).
-2. Run a judge pass on all `--no-judge` results using `judge_saved.mjs` once `OPENAI_API_KEY` is available.
-3. Wire Gemma 4 26B MoE (MLX) into OpenCode as a provider and run an interactive validation test.
-4. Test Qwen3 30B with thinking disabled to see if quality scores recover.
-5. Decide on SSE proxy vs OpenCode code change for surfacing reasoning tokens if thinking mode is needed.
+1. ✅ Ollama sweep complete (2026-04-07) — 10 models, 13 prompts
+2. ✅ MLX sweep complete (2026-04-08) — 3 models; Qwen3.5 killed due to thinking-mode issue
+3. **Wire Gemma 4 26B MoE (MLX) into OpenCode** — add to provider block, set as default for bounded tasks
+4. Interactive validation: test Gemma 4 26B MLX in OpenCode on a real codebase task (e.g. "explain this function", "suggest commit message")
+5. Optional: run offline judge pass on April 7 / April 8 results using `judge_saved.mjs` if quality ranking is needed
+6. Optional: test larger MLX models (Qwen3 30B, Phi-4 14B) if Gemma 4 26B bottlenecks on extended output (>2048 tokens)
